@@ -1,0 +1,22 @@
+name: flutter_libphonenumber_web_example
+description: Demonstrates how to use the flutter_libphonenumber_web plugin.
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_libphonenumber_web:
+    path: ../
+  flutter_libphonenumber_platform_interface: ^2.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
