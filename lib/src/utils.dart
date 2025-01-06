@@ -34,20 +34,20 @@ import 'package:flutter_libphonenumber_web/src/base.dart';
 import 'package:web/web.dart';
 
 Future<void> loadScript(final JsLibrary library) async {
-  await loadScriptUsingAssetPath(library.path);
+  await loadScriptUsingScriptTag(library.url);
 }
 
-Future<void> loadScriptUsingAssetPath(final String assetPath) async {
-  final jsContent = await HttpRequest.getString(assetPath);
+Future<void> loadScriptUsingScriptTag(final String url) {
   final script = HTMLScriptElement()
+    ..async = true
     ..defer = false
     ..crossOrigin = 'anonymous'
     ..type = 'text/javascript'
-    ..text = jsContent;
+    ..src = url;
 
   document.head!.append(script);
 
-  await script.onLoad.first;
+  return script.onLoad.first;
 }
 
 /// Injects JS [libraries]

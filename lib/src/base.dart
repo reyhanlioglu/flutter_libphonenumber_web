@@ -32,13 +32,13 @@ class JsLibrary {
   const JsLibrary({
     required this.contextName,
     required this.usesRequireJs,
-    required this.path,
+    required this.url,
   });
 
   /// The name of global variable where library is stored.
   /// Used to properly import the library if [usesRequireJs] flag is true
   final String contextName;
-  final String path;
+  final String url;
 
   /// If js code checks for 'define' variable.
   /// E.g. if at the beginning you see code like
