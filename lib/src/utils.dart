@@ -30,11 +30,29 @@
 
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_libphonenumber_web/src/base.dart';
 import 'package:web/web.dart';
 
 Future<void> loadScript(final JsLibrary library) async {
-  await loadScriptUsingScriptTag(library.url);
+  if (library.path != null) {
+    await loadScriptUsingPath(library.path!);
+  } else {
+    await loadScriptUsingScriptTag(library.url);
+  }
+}
+
+Future loadScriptUsingPath(final String path) async {
+  final jsContent = await rootBundle.loadString(path);
+
+  final script = HTMLScriptElement()
+    ..async = true
+    ..defer = false
+    ..crossOrigin = 'anonymous'
+    ..type = 'text/javascript'
+    ..text = jsContent;
+
+  document.head!.append(script);
 }
 
 Future<void> loadScriptUsingScriptTag(final String url) {

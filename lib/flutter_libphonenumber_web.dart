@@ -2,16 +2,42 @@ import 'dart:js_interop';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_libphonenumber_platform_interface/flutter_libphonenumber_platform_interface.dart';
+import 'package:flutter_libphonenumber_web/src/base.dart';
 import 'package:flutter_libphonenumber_web/src/libphonenumber.dart' as phoneutil;
+import 'package:flutter_libphonenumber_web/src/utils.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:web/web.dart';
 
 const String libPhoneNumberPath = 'assets/scripts/libphonenumber/libphonenumber.min.js';
 
 class FlutterLibphonenumberPlugin extends FlutterLibphonenumberPlatform {
+  static late Future _jsLibrariesLoadingFuture;
+
   /// Registers this class as the default instance of [FlutterLibphonenumberPlatform].
   static void registerWith(final Registrar registrar) {
     FlutterLibphonenumberPlatform.instance = FlutterLibphonenumberPlugin();
+  }
+
+  static void _setupScripts() {
+    final libraries = [
+      const JsLibrary(
+        contextName: 'libphonenumber',
+        url: "",
+        path: libPhoneNumberPath,
+        usesRequireJs: true,
+      ),
+    ];
+
+    final helperScriptTag = HTMLScriptElement()
+      ..type = 'application/javascript'
+      ..text = '''
+      function libPhoneNumberFlutterGetRegionDisplayNames(lang) {
+          return new Intl.DisplayNames([lang], {type: 'region'});
+      }
+    ''';
+
+    document.head!.append(helperScriptTag);
+    _jsLibrariesLoadingFuture = injectJSLibraries(libraries);
   }
 
   @override
@@ -19,6 +45,8 @@ class FlutterLibphonenumberPlugin extends FlutterLibphonenumberPlatform {
     final String phone,
     final String region,
   ) async {
+    await _jsLibrariesLoadingFuture;
+
     try {
       final formatter = phoneutil.AsYouTypeFormatter(region);
       formatter.clear();
@@ -37,6 +65,8 @@ class FlutterLibphonenumberPlugin extends FlutterLibphonenumberPlatform {
 
   @override
   Future<Map<String, CountryWithPhoneCode>> getAllSupportedRegions() async {
+    await _jsLibrariesLoadingFuture;
+
     final util = phoneutil.PhoneNumberUtil.getInstance();
 
     final res = <String, CountryWithPhoneCode>{};
@@ -94,6 +124,8 @@ class FlutterLibphonenumberPlugin extends FlutterLibphonenumberPlatform {
     final String phone, {
     final String? region,
   }) async {
+    await _jsLibrariesLoadingFuture;
+
     final util = phoneutil.PhoneNumberUtil.getInstance();
     final res = util.parseStringAndRegion(phone, region);
     if (res != null) {
@@ -110,6 +142,9 @@ class FlutterLibphonenumberPlugin extends FlutterLibphonenumberPlatform {
   Future<void> init({
     final Map<String, CountryWithPhoneCode> overrides = const {},
   }) async {
+    _setupScripts();
+    await _jsLibrariesLoadingFuture;
+
     return CountryManager().loadCountries(
       phoneCodesMap: await getAllSupportedRegions(),
       overrides: overrides,
